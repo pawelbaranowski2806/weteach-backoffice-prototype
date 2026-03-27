@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeTeach Backoffice - Prototype Review</title>
+<style>
+  :root {
+    --purple: #6C3CE0;
+    --purple-light: #8B5CF6;
+    --bg: #0F0F11;
+    --bg-card: #1A1A1F;
+    --bg-section: #141416;
+    --text: #F4F4F5;
+    --text-secondary: #A1A1AA;
+    --border: #27272A;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--purple), var(--purple-light));
+    padding: 48px 24px;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .header p { font-size: 14px; opacity: 0.85; }
+  .header .meta { margin-top: 12px; font-size: 12px; opacity: 0.7; }
+
+  /* Navigation */
+  .nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+  }
+  .nav a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 14px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav a:hover, .nav a.active {
+    color: var(--text);
+    border-bottom-color: var(--purple);
+  }
+
+  /* Sections */
+  .section {
+    padding: 48px 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .section-header .badge {
+    background: var(--purple);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .section h2 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .section > p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0;
+  }
+
+  /* Screen Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 24px;
+  }
+  .grid.vscode {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  /* Screen Card */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(108, 60, 224, 0.15);
+    border-color: var(--purple);
+  }
+  .card img {
+    width: 100%;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-info {
+    padding: 14px 16px;
+  }
+  .card-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .card-info p {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    cursor: zoom-out;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img {
+    max-width: 95%;
+    max-height: 95vh;
+    border-radius: 8px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.5);
+  }
+  .lightbox .caption {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-card);
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .lightbox .nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .lightbox .nav-arrow:hover { background: var(--purple); }
+  .lightbox .nav-arrow.prev { left: 16px; }
+  .lightbox .nav-arrow.next { right: 16px; }
+  .lightbox .close-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+  }
+
+  /* Compare toggle */
+  .compare-bar {
+    background: var(--bg-section);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+  .compare-bar label { color: var(--text-secondary); cursor: pointer; }
+  .toggle {
+    width: 40px; height: 22px;
+    background: var(--border);
+    border-radius: 11px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.active { background: var(--purple); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle.active::after { transform: translateX(18px); }
+
+  /* Side-by-side compare */
+  .compare-grid {
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .compare-grid.active { display: grid; }
+  .compare-grid .compare-pair {
+    display: contents;
+  }
+  .compare-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    padding: 4px 0;
+    text-align: center;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  @media (max-width: 768px) {
+    .grid { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .header { padding: 32px 16px; }
+    .section { padding: 32px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>WeTeach Backoffice</h1>
+  <p>High-fidelity UX/UI Prototype - Panel zarzadzania playbookami AI</p>
+  <div class="meta">Wersja: 1.0 | Data: 27.03.2026 | Stack: Angular + Tailwind CSS</div>
+</div>
+
+<nav class="nav" id="nav">
+  <a href="#light" class="active">Light Mode</a>
+  <a href="#dark">Dark Mode</a>
+  <a href="#vscode">VS Code Extension</a>
+  <a href="#compare">Porownanie</a>
+</nav>
+
+<!-- LIGHT MODE -->
+<div class="section" id="light">
+  <div class="section-header">
+    <h2>Light Mode</h2>
+    <span class="badge">10 ekranow</span>
+  </div>
+  <p>Glowna wersja backoffice - jasny motyw z sidebar i top bar w stylu SaaS.</p>
+
+  <div class="grid">
+    <div class="card" onclick="openLightbox(0)">
+      <img src="exports/67fYx.png" alt="Dashboard" loading="lazy">
+      <div class="card-info">
+        <h3>1. Dashboard</h3>
+        <p>Centralny hub uzytkownika - statystyki, ulubione playbooki, workflow</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(1)">
+      <img src="exports/W63nl.png" alt="Biblioteka" loading="lazy">
+      <div class="card-info">
+        <h3>2. Biblioteka Playbookow</h3>
+        <p>Przegladanie i filtrowanie wszystkich dostepnych playbookow</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(2)">
+      <img src="exports/SrLkk.png" alt="Playbook Detail" loading="lazy">
+      <div class="card-info">
+        <h3>3. Playbook Detail</h3>
+        <p>Szczegolowy widok playbooka - opis, spis tresci, oceny</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(3)">
+      <img src="exports/fgXiA.png" alt="Learning Mode" loading="lazy">
+      <div class="card-info">
+        <h3>4. Learning Mode</h3>
+        <p>Nauka krok po kroku - instrukcje, code snippets, checklista</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(4)">
+      <img src="exports/04zAh.png" alt="Komentarze" loading="lazy">
+      <div class="card-info">
+        <h3>5. Komentarze i Ocena</h3>
+        <p>Community feedback - oceny, komentarze, dyskusja</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(5)">
+      <img src="exports/1uVSQ.png" alt="Analytics" loading="lazy">
+      <div class="card-info">
+        <h3>6. Postep i Analityka</h3>
+        <p>KPI, progress timeline, tabela playbookow, osiagniecia</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(6)">
+      <img src="exports/Hco1C.png" alt="Workflow" loading="lazy">
+      <div class="card-info">
+        <h3>7. Workflow Map</h3>
+        <p>Wizualizacja relacji miedzy playbookami jako graf</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(7)">
+      <img src="exports/u8tM9.png" alt="Team Dashboard" loading="lazy">
+      <div class="card-info">
+        <h3>8. Team Dashboard</h3>
+        <p>Widok managera - postep zespolu, ROI, compliance</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(8)">
+      <img src="exports/q4GW2.png" alt="Moje Playbooki" loading="lazy">
+      <div class="card-info">
+        <h3>9. Moje Playbooki</h3>
+        <p>Wymagajace uwagi, ulubione, status personalny</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(9)">
+      <img src="exports/uRMJK.png" alt="Modal" loading="lazy">
+      <div class="card-info">
+        <h3>10. Modal Ukonczenia</h3>
+        <p>Gratulacje po ukonczeniu playbooka, nastepne kroki</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- DARK MODE -->
+<div class="section" id="dark">
+  <div class="section-header">
+    <h2>Dark Mode</h2>
+    <span class="badge">10 ekranow</span>
+  </div>
+  <p>Alternatywna wersja ciemna - te same funkcjonalnosci, ciemna paleta kolorow.</p>
+
+  <div class="grid">
+    <div class="card" onclick="openLightbox(10)">
+      <img src="exports/PEgxf.png" alt="Dashboard Dark" loading="lazy">
+      <div class="card-info">
+        <h3>1D. Dashboard</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(11)">
+      <img src="exports/avGk8.png" alt="Biblioteka Dark" loading="lazy">
+      <div class="card-info">
+        <h3>2D. Biblioteka Playbookow</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(12)">
+      <img src="exports/n7zEF.png" alt="Detail Dark" loading="lazy">
+      <div class="card-info">
+        <h3>3D. Playbook Detail</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(13)">
+      <img src="exports/YjhPM.png" alt="Learning Dark" loading="lazy">
+      <div class="card-info">
+        <h3>4D. Learning Mode</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(14)">
+      <img src="exports/EXsc6.png" alt="Komentarze Dark" loading="lazy">
+      <div class="card-info">
+        <h3>5D. Komentarze i Ocena</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(15)">
+      <img src="exports/A5f26.png" alt="Analytics Dark" loading="lazy">
+      <div class="card-info">
+        <h3>6D. Postep i Analityka</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(16)">
+      <img src="exports/wysM2.png" alt="Workflow Dark" loading="lazy">
+      <div class="card-info">
+        <h3>7D. Workflow Map</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(17)">
+      <img src="exports/Q3uXo.png" alt="Team Dark" loading="lazy">
+      <div class="card-info">
+        <h3>8D. Team Dashboard</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(18)">
+      <img src="exports/a9b4S.png" alt="Moje Playbooki Dark" loading="lazy">
+      <div class="card-info">
+        <h3>9D. Moje Playbooki</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(19)">
+      <img src="exports/7hqDY.png" alt="Modal Dark" loading="lazy">
+      <div class="card-info">
+        <h3>10D. Modal Ukonczenia</h3>
+        <p>Dark mode</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- VS CODE EXTENSION -->
+<div class="section" id="vscode">
+  <div class="section-header">
+    <h2>VS Code Extension</h2>
+    <span class="badge">6 paneli</span>
+  </div>
+  <p>Skondensowana wersja kluczowych funkcjonalnosci jako panel boczny IDE (350px). Deweloper pracuje bez opuszczania edytora.</p>
+
+  <div class="grid vscode">
+    <div class="card" onclick="openLightbox(20)">
+      <img src="exports/MMAVs.png" alt="VSCode Login" loading="lazy">
+      <div class="card-info">
+        <h3>Login</h3>
+        <p>Logowanie i polaczenie z usluga</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(21)">
+      <img src="exports/KJSyw.png" alt="VSCode Dashboard" loading="lazy">
+      <div class="card-info">
+        <h3>Mini Dashboard</h3>
+        <p>Statystyki, aktualny playbook, rekomendacje</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(22)">
+      <img src="exports/Px1w3.png" alt="VSCode Browser" loading="lazy">
+      <div class="card-info">
+        <h3>Playbook Browser</h3>
+        <p>Wyszukiwanie, filtry, ulubione</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(23)">
+      <img src="exports/DZO20.png" alt="VSCode Learning" loading="lazy">
+      <div class="card-info">
+        <h3>Learning Mode</h3>
+        <p>Nauka krok po kroku w IDE</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(24)">
+      <img src="exports/6sQfk.png" alt="VSCode Progress" loading="lazy">
+      <div class="card-info">
+        <h3>Progress Tracker</h3>
+        <p>Postep, osiagniecia, aktywnosc</p>
+      </div>
+    </div>
+    <div class="card" onclick="openLightbox(25)">
+      <img src="exports/31vYF.png" alt="VSCode Rating" loading="lazy">
+      <div class="card-info">
+        <h3>Ocen Playbook</h3>
+        <p>Ocena i czas zaoszczedzony</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- COMPARE -->
+<div class="section" id="compare">
+  <div class="section-header">
+    <h2>Porownanie Light vs Dark</h2>
+  </div>
+  <p>Zestawienie wersji jasnej i ciemnej obok siebie.</p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="compare-label">LIGHT MODE</div>
+    <div class="compare-label">DARK MODE</div>
+
+    <div class="card"><img src="exports/67fYx.png" alt="Dashboard Light" loading="lazy"><div class="card-info"><h3>1. Dashboard</h3></div></div>
+    <div class="card"><img src="exports/PEgxf.png" alt="Dashboard Dark" loading="lazy"><div class="card-info"><h3>1D. Dashboard</h3></div></div>
+
+    <div class="card"><img src="exports/W63nl.png" alt="Biblioteka Light" loading="lazy"><div class="card-info"><h3>2. Biblioteka</h3></div></div>
+    <div class="card"><img src="exports/avGk8.png" alt="Biblioteka Dark" loading="lazy"><div class="card-info"><h3>2D. Biblioteka</h3></div></div>
+
+    <div class="card"><img src="exports/SrLkk.png" alt="Detail Light" loading="lazy"><div class="card-info"><h3>3. Detail</h3></div></div>
+    <div class="card"><img src="exports/n7zEF.png" alt="Detail Dark" loading="lazy"><div class="card-info"><h3>3D. Detail</h3></div></div>
+
+    <div class="card"><img src="exports/fgXiA.png" alt="Learning Light" loading="lazy"><div class="card-info"><h3>4. Learning</h3></div></div>
+    <div class="card"><img src="exports/YjhPM.png" alt="Learning Dark" loading="lazy"><div class="card-info"><h3>4D. Learning</h3></div></div>
+
+    <div class="card"><img src="exports/1uVSQ.png" alt="Analytics Light" loading="lazy"><div class="card-info"><h3>6. Analityka</h3></div></div>
+    <div class="card"><img src="exports/A5f26.png" alt="Analytics Dark" loading="lazy"><div class="card-info"><h3>6D. Analityka</h3></div></div>
+  </div>
+</div>
+
+<div class="footer">
+  WeTeach Backoffice Prototype &mdash; Wygenerowano 27.03.2026 &mdash; 26 ekranow (10 Light + 10 Dark + 6 VS Code)
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="close-btn" onclick="closeLightbox(event)">&times;</div>
+  <div class="nav-arrow prev" onclick="event.stopPropagation(); navigateLightbox(-1)">&larr;</div>
+  <img id="lightbox-img" src="" alt="">
+  <div class="nav-arrow next" onclick="event.stopPropagation(); navigateLightbox(1)">&rarr;</div>
+  <div class="caption" id="lightbox-caption"></div>
+</div>
+
+<script>
+const screens = [
+  // Light (0-9)
+  { src: 'exports/67fYx.png', title: '1. Dashboard' },
+  { src: 'exports/W63nl.png', title: '2. Biblioteka Playbookow' },
+  { src: 'exports/SrLkk.png', title: '3. Playbook Detail' },
+  { src: 'exports/fgXiA.png', title: '4. Learning Mode' },
+  { src: 'exports/04zAh.png', title: '5. Komentarze i Ocena' },
+  { src: 'exports/1uVSQ.png', title: '6. Postep i Analityka' },
+  { src: 'exports/Hco1C.png', title: '7. Workflow Map' },
+  { src: 'exports/u8tM9.png', title: '8. Team Dashboard' },
+  { src: 'exports/q4GW2.png', title: '9. Moje Playbooki' },
+  { src: 'exports/uRMJK.png', title: '10. Modal Ukonczenia' },
+  // Dark (10-19)
+  { src: 'exports/PEgxf.png', title: '1D. Dashboard (Dark)' },
+  { src: 'exports/avGk8.png', title: '2D. Biblioteka (Dark)' },
+  { src: 'exports/n7zEF.png', title: '3D. Detail (Dark)' },
+  { src: 'exports/YjhPM.png', title: '4D. Learning (Dark)' },
+  { src: 'exports/EXsc6.png', title: '5D. Komentarze (Dark)' },
+  { src: 'exports/A5f26.png', title: '6D. Analityka (Dark)' },
+  { src: 'exports/wysM2.png', title: '7D. Workflow (Dark)' },
+  { src: 'exports/Q3uXo.png', title: '8D. Team (Dark)' },
+  { src: 'exports/a9b4S.png', title: '9D. Moje Playbooki (Dark)' },
+  { src: 'exports/7hqDY.png', title: '10D. Modal (Dark)' },
+  // VSCode (20-25)
+  { src: 'exports/MMAVs.png', title: 'VSCode - Login' },
+  { src: 'exports/KJSyw.png', title: 'VSCode - Mini Dashboard' },
+  { src: 'exports/Px1w3.png', title: 'VSCode - Playbook Browser' },
+  { src: 'exports/DZO20.png', title: 'VSCode - Learning Mode' },
+  { src: 'exports/6sQfk.png', title: 'VSCode - Progress Tracker' },
+  { src: 'exports/31vYF.png', title: 'VSCode - Ocen Playbook' },
+];
+
+let currentIndex = 0;
+
+function openLightbox(index) {
+  currentIndex = index;
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lightbox-img').src = screens[index].src;
+  document.getElementById('lightbox-caption').textContent = screens[index].title;
+  lb.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+  if (e.target.classList.contains('nav-arrow') || e.target.parentElement?.classList.contains('nav-arrow')) return;
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function navigateLightbox(dir) {
+  currentIndex = (currentIndex + dir + screens.length) % screens.length;
+  document.getElementById('lightbox-img').src = screens[currentIndex].src;
+  document.getElementById('lightbox-caption').textContent = screens[currentIndex].title;
+}
+
+document.addEventListener('keydown', (e) => {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('active')) return;
+  if (e.key === 'Escape') lb.classList.remove('active'), document.body.style.overflow = '';
+  if (e.key === 'ArrowLeft') navigateLightbox(-1);
+  if (e.key === 'ArrowRight') navigateLightbox(1);
+});
+
+// Nav highlight on scroll
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+  });
+});
+</script>
+
+</body>
+</html>
